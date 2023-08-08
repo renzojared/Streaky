@@ -10,5 +10,6 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Author> Author { get; set; }
+    public DbSet<Book> Book { get; set; }
 }
 

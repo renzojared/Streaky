@@ -13,7 +13,11 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+        //Ignorar ciclos author con libro y libro con author
+
+
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer
         (Configuration.GetConnectionString("defaultConnection")));
         services.AddEndpointsApiExplorer();
