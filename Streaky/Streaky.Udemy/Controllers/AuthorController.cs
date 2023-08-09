@@ -1,78 +1,28 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Udemy.Entities;
-using Streaky.Udemy.Filters;
-using Streaky.Udemy.Services;
 
 namespace Streaky.Udemy.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize]
 public class AuthorController : ControllerBase
 {
     private readonly ApplicationDbContext context;
-    private readonly IService service;
-    private readonly ServiceTransient serviceTransient;
-    private readonly ServiceScoped serviceScoped;
-    private readonly ServiceSingleton serviceSingleton;
-    private readonly ILogger<AuthorController> logger;
 
-    public AuthorController(ApplicationDbContext context, IService service, ServiceTransient serviceTransient, ServiceScoped serviceScoped, ServiceSingleton serviceSingleton, ILogger<AuthorController> logger)
+    public AuthorController(ApplicationDbContext context)
     {
         this.context = context;
-        this.service = service;
-        this.serviceTransient = serviceTransient;
-        this.serviceScoped = serviceScoped;
-        this.serviceSingleton = serviceSingleton;
-        this.logger = logger;
-    }
-
-    [HttpGet("Guid")]
-    //[ResponseCache(Duration = 10)] //si la data no va cambiar mucho
-    [ServiceFilter(typeof(ActionFilter))]
-    public ActionResult GetGuids()
-    {
-        return Ok(new
-        {
-            AuthorControllerTransient = serviceTransient.Guid,
-            ServiceA_Transient = service.GetTransient(),
-            AuthorControllerScoped = serviceScoped.Guid,
-            ServiceA_Scoped = service.GetScoped(),
-            AuthorControllerSingleton = serviceSingleton.Guid,
-            ServiceA_Singleton = service.GetSingleton()
-        });
     }
 
     [HttpGet]
-    [HttpGet("list")]
-    [HttpGet("/list")]
-    [ServiceFilter(typeof(ActionFilter))]
     public async Task<ActionResult<List<Author>>> Get()
     {
-        throw new NotImplementedException();
-
-        logger.LogInformation("Estamos obteniendo informacion");
-        logger.LogWarning("Estamos obteniendo informacion - warning");
-        service.DoTask();
-        return await context.Author.Include(x => x.Books).ToListAsync();
+        return await context.Author.ToListAsync();
     }
 
-    [HttpGet("first")] // api/author/first?name=jared&surname=leon
-    public async Task<ActionResult<Author>> FirstAuthor([FromHeader] int someValue, [FromQuery] string name)
-    {
-        return await context.Author.FirstOrDefaultAsync();
-    }
-
-    [HttpGet("second")]
-    public ActionResult<Author> SecondAuthor()
-    {
-        return new Author() { Name = "New" };
-    }
-
-    [HttpGet("{id:int}/{param2?}")] //para valor x defecto igualar el param2 = defectovalor
-    public async Task<ActionResult<Author>> Get(int id, string param2)
+    [HttpGet("{id:int}")] //para valor x defecto igualar el param2 = defectovalor
+    public async Task<ActionResult<Author>> Get(int id)
     {
         var author = await context.Author.FirstOrDefaultAsync(x => x.Id == id);
 

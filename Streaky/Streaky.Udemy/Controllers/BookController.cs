@@ -18,10 +18,10 @@ public class BookController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Book>> Get(int id)
     {
-        return await context.Book.Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
+        return await context.Book.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    [HttpPost]
+    /*[HttpPost]
     public async Task<ActionResult> Post(Book book)
     {
         var existsAuthor = await context.Author.AnyAsync(x => x.Id == book.AuthorId);
@@ -34,6 +34,6 @@ public class BookController : ControllerBase
         await context.SaveChangesAsync();
 
         return Ok();
-    }
+    }*/
 }
 

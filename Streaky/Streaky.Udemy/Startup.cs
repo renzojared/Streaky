@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Streaky.Udemy.Filters;
 using Streaky.Udemy.Middlewares;
-using Streaky.Udemy.Services;
 
 namespace Streaky.Udemy;
 
@@ -25,25 +24,9 @@ public class Startup
             .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
         //Ignorar ciclos author con libro y libro con author
 
-
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
 
-        //services.AddTransient<IService, ServiceA>(); //inyeccion a interfaces || funcion que realiza algo y retorna (no ocupa estado)
-        services.AddTransient<IService, ServiceA>(); //inyeccion a interfaces || Para data en memoria por ejem
-        //services.AddScoped<IService, ServiceA>(); //inyeccion a interfaces || AplicationDbContext
-        //services.AddTransient<ServiceA>();
-
-        services.AddTransient<ServiceTransient>();
-        services.AddScoped<ServiceScoped>();
-        services.AddSingleton<ServiceSingleton>();
-        services.AddTransient<ActionFilter>();
-        services.AddHostedService<WriteOnFile>();
-
-
-        services.AddResponseCaching();
-
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
@@ -53,16 +36,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
     {
-        //app.UseMiddleware<LogResponseHttpMiddleware>();
         app.UseLogResponseHttp();
-
-        app.Map("/route1", app =>
-        {
-            app.Run(async contex =>
-            {
-                await contex.Response.WriteAsync("Estoy interceptando el middleware");
-            });
-        });
 
         if (env.IsDevelopment()) //Solo para ambiente desarrollo
         {
@@ -74,8 +48,6 @@ public class Startup
         app.UseHttpsRedirection();
 
         app.UseRouting();
-
-        app.UseResponseCaching();
 
         app.UseAuthorization();
 
