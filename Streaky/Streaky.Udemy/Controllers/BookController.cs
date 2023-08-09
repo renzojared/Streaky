@@ -5,7 +5,7 @@ using Streaky.Udemy.Entities;
 namespace Streaky.Udemy.Controllers;
 
 [ApiController]
-[Route("api/books")]
+[Route("api/[controller]")]
 public class BookController : ControllerBase
 {
     public readonly ApplicationDbContext context;

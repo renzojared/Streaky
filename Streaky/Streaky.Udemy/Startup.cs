@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Streaky.Udemy.Services;
 
 namespace Streaky.Udemy;
 
@@ -11,15 +12,25 @@ public class Startup
         Configuration = configuration;
     }
 
-    public void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services) //resolucion de una dependencia
     {
+
         services.AddControllers()
             .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
         //Ignorar ciclos author con libro y libro con author
 
 
-        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer
-        (Configuration.GetConnectionString("defaultConnection")));
+        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
+
+        //services.AddTransient<IService, ServiceA>(); //inyeccion a interfaces || funcion que realiza algo y retorna (no ocupa estado)
+        services.AddTransient<IService, ServiceA>(); //inyeccion a interfaces || Para data en memoria por ejem
+        //services.AddScoped<IService, ServiceA>(); //inyeccion a interfaces || AplicationDbContext
+        //services.AddTransient<ServiceA>();
+
+        services.AddTransient<ServiceTransient>();
+        services.AddScoped<ServiceScoped>();
+        services.AddSingleton<ServiceSingleton>();
+
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
