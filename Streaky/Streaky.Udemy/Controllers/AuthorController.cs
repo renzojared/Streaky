@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Udemy.Entities;
+using Streaky.Udemy.Filters;
 using Streaky.Udemy.Services;
 
 namespace Streaky.Udemy.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+//[Authorize]
 public class AuthorController : ControllerBase
 {
     private readonly ApplicationDbContext context;
@@ -27,6 +30,8 @@ public class AuthorController : ControllerBase
     }
 
     [HttpGet("Guid")]
+    //[ResponseCache(Duration = 10)] //si la data no va cambiar mucho
+    [ServiceFilter(typeof(ActionFilter))]
     public ActionResult GetGuids()
     {
         return Ok(new
@@ -43,8 +48,11 @@ public class AuthorController : ControllerBase
     [HttpGet]
     [HttpGet("list")]
     [HttpGet("/list")]
+    [ServiceFilter(typeof(ActionFilter))]
     public async Task<ActionResult<List<Author>>> Get()
     {
+        throw new NotImplementedException();
+
         logger.LogInformation("Estamos obteniendo informacion");
         logger.LogWarning("Estamos obteniendo informacion - warning");
         service.DoTask();

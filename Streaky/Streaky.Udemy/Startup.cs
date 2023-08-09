@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Streaky.Udemy.Filters;
+using Streaky.Udemy.Middlewares;
 using Streaky.Udemy.Services;
 
 namespace Streaky.Udemy;
@@ -15,7 +18,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services) //resolucion de una dependencia
     {
 
-        services.AddControllers()
+        services.AddControllers(opt =>
+        {
+            opt.Filters.Add(typeof(ExceptionFiler));
+        })
             .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
         //Ignorar ciclos author con libro y libro con author
 
@@ -30,6 +36,13 @@ public class Startup
         services.AddTransient<ServiceTransient>();
         services.AddScoped<ServiceScoped>();
         services.AddSingleton<ServiceSingleton>();
+        services.AddTransient<ActionFilter>();
+        services.AddHostedService<WriteOnFile>();
+
+
+        services.AddResponseCaching();
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
@@ -40,25 +53,8 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
     {
-        app.Use(async (context, next) =>
-        {
-            using (var ms = new MemoryStream())
-            {
-                var originalBody = context.Response.Body;
-                context.Response.Body = ms;
-
-                await next.Invoke();
-
-                ms.Seek(0, SeekOrigin.Begin);
-                string response = new StreamReader(ms).ReadToEnd();
-                ms.Seek(0, SeekOrigin.Begin);
-
-                await ms.CopyToAsync(originalBody);
-                context.Response.Body = originalBody;
-
-                logger.LogInformation(response);
-            }
-        });
+        //app.UseMiddleware<LogResponseHttpMiddleware>();
+        app.UseLogResponseHttp();
 
         app.Map("/route1", app =>
         {
@@ -78,6 +74,8 @@ public class Startup
         app.UseHttpsRedirection();
 
         app.UseRouting();
+
+        app.UseResponseCaching();
 
         app.UseAuthorization();
 
