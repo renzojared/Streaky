@@ -38,12 +38,41 @@ public class Startup
         });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
     {
-        if (env.IsDevelopment())
+        app.Use(async (context, next) =>
         {
+            using (var ms = new MemoryStream())
+            {
+                var originalBody = context.Response.Body;
+                context.Response.Body = ms;
+
+                await next.Invoke();
+
+                ms.Seek(0, SeekOrigin.Begin);
+                string response = new StreamReader(ms).ReadToEnd();
+                ms.Seek(0, SeekOrigin.Begin);
+
+                await ms.CopyToAsync(originalBody);
+                context.Response.Body = originalBody;
+
+                logger.LogInformation(response);
+            }
+        });
+
+        app.Map("/route1", app =>
+        {
+            app.Run(async contex =>
+            {
+                await contex.Response.WriteAsync("Estoy interceptando el middleware");
+            });
+        });
+
+        if (env.IsDevelopment()) //Solo para ambiente desarrollo
+        {
+            app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json","Streaky.Udemy v1"));
         }
 
         app.UseHttpsRedirection();
