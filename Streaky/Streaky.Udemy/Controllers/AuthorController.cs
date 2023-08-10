@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Streaky.Udemy.DTOs;
 using Streaky.Udemy.Entities;
 
 namespace Streaky.Udemy.Controllers;
@@ -9,49 +11,54 @@ namespace Streaky.Udemy.Controllers;
 public class AuthorController : ControllerBase
 {
     private readonly ApplicationDbContext context;
+    private readonly IMapper mapper;
 
-    public AuthorController(ApplicationDbContext context)
+    public AuthorController(ApplicationDbContext context, IMapper mapper)
     {
         this.context = context;
+        this.mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Author>>> Get()
+    public async Task<ActionResult<List<AuthorDTO>>> Get()
     {
-        return await context.Author.ToListAsync();
+        var authors = await context.Author.ToListAsync();
+        return mapper.Map<List<AuthorDTO>>(authors);
     }
 
     [HttpGet("{id:int}")] //para valor x defecto igualar el param2 = defectovalor
-    public async Task<ActionResult<Author>> Get(int id)
+    public async Task<ActionResult<AuthorDTO>> Get(int id)
     {
         var author = await context.Author.FirstOrDefaultAsync(x => x.Id == id);
 
         if (author == null)
             return NotFound();
 
-        return author;
+        return mapper.Map<AuthorDTO>(author);
     }
 
     [HttpGet("{name}")]
-    public async Task<ActionResult<Author>> Get([FromRoute] string name)
+    public async Task<ActionResult<List<AuthorDTO>>> Get([FromRoute] string name)
     {
-        var author = await context.Author.FirstOrDefaultAsync(x => x.Name.Contains(name));
+        var authors = await context.Author.Where(x => x.Name.Contains(name)).ToListAsync();
 
-        if (author == null)
+        if (!authors.Any())
             return NotFound();
 
-        return author;
+        return mapper.Map<List<AuthorDTO>>(authors);
     }
 
     [HttpPost]
-    public async Task<ActionResult> Post([FromBody] Author author)
+    public async Task<ActionResult> Post([FromBody] AuthorCreationDTO authorCreationDTO)
     {
-        var existsAuthorWithSameName = await context.Author.AnyAsync(x => x.Name == author.Name);
+        var existsAuthorWithSameName = await context.Author.AnyAsync(x => x.Name == authorCreationDTO.Name);
 
         if (existsAuthorWithSameName)
-            return BadRequest($"Ya existe un autor con el nombre {author.Name}");
+            return BadRequest($"Ya existe un autor con el nombre {authorCreationDTO.Name}");
 
-        context.Add(author);
+        var autor = mapper.Map<Author>(authorCreationDTO);
+
+        context.Add(autor);
         await context.SaveChangesAsync();
         return Ok();
     }

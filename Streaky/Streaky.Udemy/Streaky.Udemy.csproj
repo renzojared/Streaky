@@ -15,6 +15,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.21" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +25,8 @@
     <None Remove="Services\" />
     <None Remove="Middlewares\" />
     <None Remove="Filters\" />
+    <None Remove="DTOs\" />
+    <None Remove="Utilities\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -33,6 +36,8 @@
     <Folder Include="Middlewares\" />
     <Folder Include="Filters\" />
     <Folder Include="wwwroot\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="Utilities\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\" />
