@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Udemy.DTOs;
@@ -19,26 +20,116 @@ public class BookController : ControllerBase
         this.mapper = mapper;
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<BookDTO>> Get(int id)
+    [HttpGet("{id:int}", Name = "getBook")]
+    public async Task<ActionResult<BookDTOWithAuthor>> Get(int id)
     {
-        var books = await context.Book.FirstOrDefaultAsync(x => x.Id == id);
-        return mapper.Map<BookDTO>(books);
+        var books = await context.Book
+            .Include(_ => _.AuthorBooks)
+            .ThenInclude(ab => ab.Author)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (books == null)
+            return NotFound();
+
+        books.AuthorBooks = books.AuthorBooks.OrderBy(x => x.Order).ToList();
+
+        return mapper.Map<BookDTOWithAuthor>(books);
     }
 
     [HttpPost]
     public async Task<ActionResult> Post(BookCreationDTO bookCreationDTO)
     {
-        /*var existsAuthor = await context.Author.AnyAsync(x => x.Id == book.AuthorId);
+        if (bookCreationDTO.AuthorsId == null)
+            return BadRequest("No se puede crear un libro sin autores.");
 
-        if (!existsAuthor)
-            return BadRequest($"No existe el author de Id: {book.AuthorId}");*/
+        var authors = await context.Author
+            .Where(_ => bookCreationDTO.AuthorsId.Contains(_.Id)).Select(x => x.Id).ToListAsync();
+
+        if (bookCreationDTO.AuthorsId.Count != authors.Count)
+            return BadRequest("No existe alguno de los autores enviados.");
+
         var book = mapper.Map<Book>(bookCreationDTO);
+
+        AssignOrderAuthors(book);
+
         context.Add(book);
 
         await context.SaveChangesAsync();
 
-        return Ok();
+        var bookDTO = mapper.Map<BookDTO>(book);
+
+        return CreatedAtRoute("getBook", new { id = book.Id }, bookDTO);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult> Put(int id, BookCreationDTO bookCreationDTO)
+    {
+        var bookDb = await context.Book
+            .Include(_ => _.AuthorBooks)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (bookDb == null)
+            return NotFound();
+
+        bookDb = mapper.Map(bookCreationDTO, bookDb); //persistir cambios en una sola variable declarada.
+
+        AssignOrderAuthors(bookDb);
+
+        await context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    private void AssignOrderAuthors(Book book)
+    {
+        if (book.AuthorBooks != null)
+        {
+            for (int i = 0; i < book.AuthorBooks.Count; i++)
+            {
+                book.AuthorBooks[i].Order = i;
+            }
+        }
+    }
+
+    [HttpPatch("{id:int}")]
+    public async Task<ActionResult> Patch(int id, JsonPatchDocument<BookPatchDTO> jsonPatchDocument)
+    {
+        if (jsonPatchDocument == null)
+            return BadRequest();
+
+        var bookDB = await context.Book.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (bookDB == null)
+            return NotFound();
+
+        var bookDTO = mapper.Map<BookPatchDTO>(bookDB);
+
+        jsonPatchDocument.ApplyTo(bookDTO, ModelState);
+
+        var isValid = TryValidateModel(bookDTO);
+
+        if (!isValid)
+            return BadRequest(ModelState);
+
+        mapper.Map(bookDTO, bookDB);
+
+        await context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult> Delete(int id)
+    {
+        var exists = await context.Book.AnyAsync(x => x.Id == id);
+
+        if (!exists)
+            return NotFound();
+
+        context.Remove(new Book() { Id = id });
+        await context.SaveChangesAsync();
+
+        return NoContent();
     }
 }
 

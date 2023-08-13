@@ -3,13 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Streaky.Udemy.DTOs;
 
-public class BookCreationDTO
+public class BookPatchDTO
 {
     [FirstCapitalLetter]
     [StringLength(maximumLength: 100)]
     [Required]
     public string Tittle { get; set; }
     public DateTime PublicationDate { get; set; }
-    public List<int> AuthorsId { get; set; }
 }
 

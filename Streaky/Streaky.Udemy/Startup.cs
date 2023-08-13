@@ -21,7 +21,8 @@ public class Startup
         {
             opt.Filters.Add(typeof(ExceptionFiler));
         })
-            .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+            .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles)
+            .AddNewtonsoftJson();
         //Ignorar ciclos author con libro y libro con author
 
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));

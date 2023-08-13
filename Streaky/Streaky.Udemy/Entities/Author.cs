@@ -10,5 +10,6 @@ public class Author
     [StringLength(maximumLength:50, ErrorMessage = "El campo {0} no debe tener más de {1} caractéres.")]
     [FirstCapitalLetter]
     public string Name { get; set; }
+    public List<AuthorBook> AuthorBooks { get; set; }
 }
 
