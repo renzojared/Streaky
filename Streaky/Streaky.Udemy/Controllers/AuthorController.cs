@@ -12,11 +12,26 @@ public class AuthorController : ControllerBase
 {
     private readonly ApplicationDbContext context;
     private readonly IMapper mapper;
+    private readonly IConfiguration configuration;
 
-    public AuthorController(ApplicationDbContext context, IMapper mapper)
+    public AuthorController(ApplicationDbContext context, IMapper mapper, IConfiguration configuration)
     {
         this.context = context;
         this.mapper = mapper;
+        this.configuration = configuration;
+    }
+
+    [HttpGet("configurationss")]
+    public ActionResult<string> GetConfiguration()
+    {
+        /*
+            1. appsettings (menor prioridad)
+            2. launchsettings
+            3. secrets (local)
+            r. from linecommand dotnet run -- "key=value" (mayor prioridad)
+        */
+        //return configuration["connectionStrings:defaultConnection"];
+        return configuration["lastname"];
     }
 
     [HttpGet]
