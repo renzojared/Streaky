@@ -31,54 +31,7 @@ public class AccountController : ControllerBase
         this.hashService = hashService;
     }
 
-    [HttpGet("encrypt")]
-    public ActionResult Encrypt()
-    {
-        var texPlain = "Renzo Leon";
-        var textCrypt = dataProtector.Protect(texPlain);
-        var textDescrypt = dataProtector.Unprotect(textCrypt);
-
-        return Ok(new
-        {
-            texPlain = texPlain,
-            textCrypt = textCrypt,
-            textDescrypt = textDescrypt
-        });
-    }
-
-    [HttpGet("encryptByTime")]
-    public ActionResult EncryptByTime()
-    {
-        var protectLimitedByTime = dataProtector.ToTimeLimitedDataProtector();
-
-        var texPlain = "Renzo Leon";
-        var textCrypt = protectLimitedByTime.Protect(texPlain, lifetime: TimeSpan.FromSeconds(5));
-        Thread.Sleep(6000);
-        var textDescrypt = protectLimitedByTime.Unprotect(textCrypt);
-
-        return Ok(new
-        {
-            texPlain = texPlain,
-            textCrypt = textCrypt,
-            textDescrypt = textDescrypt
-        });
-    }
-
-    [HttpGet("hash/{textPlain}")]
-    public ActionResult DoHash(string textPlain)
-    {
-        var result1 = hashService.Hash(textPlain);
-        var result2 = hashService.Hash(textPlain);
-
-        return Ok(new
-        {
-            textPlain = textPlain,
-            Hash1 = result1,
-            Hash2 = result2
-        });
-    }
-
-    [HttpPost("register")]
+    [HttpPost("register", Name = "registerUser")]
     public async Task<ActionResult<ResponseAuthentication>> Register(CredentialUser credentialUser)
     {
         var user = new IdentityUser { UserName = credentialUser.Email, Email = credentialUser.Email };
@@ -92,7 +45,7 @@ public class AccountController : ControllerBase
             return BadRequest(result.Errors);
     }
 
-    [HttpPost("login")]
+    [HttpPost("login", Name = "loginUser")]
     public async Task<ActionResult<ResponseAuthentication>> Login(CredentialUser credentialUser)
     {
         var result = await signInManager.PasswordSignInAsync(credentialUser.Email, credentialUser.Password, isPersistent: false, lockoutOnFailure: false);
@@ -103,7 +56,7 @@ public class AccountController : ControllerBase
             return BadRequest("Incorrect login");
     }
 
-    [HttpGet("RenewToken")]
+    [HttpGet("RenewToken", Name = "renewToken")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<ActionResult<ResponseAuthentication>> Renew()
     {
@@ -144,7 +97,7 @@ public class AccountController : ControllerBase
         };
     }
 
-    [HttpPost("RemoveAdmin")]
+    [HttpPost("RemoveAdmin", Name = "removeAdmin")]
     public async Task<ActionResult> RemoveAdmin(EditAdminDTO editAdminDTO)
     {
         var user = await userManager.FindByEmailAsync(editAdminDTO.Email);
@@ -152,7 +105,7 @@ public class AccountController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("DoAdmin")]
+    [HttpPost("DoAdmin", Name = "doAdmin")]
     public  async Task<ActionResult> DoAdmin(EditAdminDTO editAdminDTO)
     {
         var user = await userManager.FindByEmailAsync(editAdminDTO.Email);

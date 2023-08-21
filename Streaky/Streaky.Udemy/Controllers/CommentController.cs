@@ -24,7 +24,7 @@ public class CommentController : ControllerBase
         this.userManager = userManager;
     }
 
-    [HttpGet]
+    [HttpGet(Name = "getCommentsBook")]
     public async Task<ActionResult<List<CommentDTO>>> Get(int bookId)
     {
         var comments = await context.Comment.Where(_ => _.BookId == bookId).ToListAsync();
@@ -48,7 +48,7 @@ public class CommentController : ControllerBase
         return mapper.Map<CommentDTO>(comment);
     }
 
-    [HttpPost]
+    [HttpPost(Name = "createComment")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<ActionResult> Post(int bookId, CommentCreationDTO commentCreationDTO)
     {
@@ -73,7 +73,7 @@ public class CommentController : ControllerBase
         return CreatedAtRoute("getComment", new { id = comment.Id, bookId = bookId }, commentDTO);
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:int}", Name = "updateComment")]
     public async Task<ActionResult> Put(int bookId, int id, CommentCreationDTO commentCreationDTO)
     {
         var existBook = await context.Book.AnyAsync(_ => _.Id == bookId);

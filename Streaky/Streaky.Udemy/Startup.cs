@@ -2,12 +2,14 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Streaky.Udemy.Filters;
 using Streaky.Udemy.Middlewares;
 using Streaky.Udemy.Services;
+using Streaky.Udemy.Utilities;
 
 namespace Streaky.Udemy;
 
@@ -48,6 +50,8 @@ public class Startup
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthorsAPI", Version = "v1" });
+            c.OperationFilter<AddParameterHATEOAS>();
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -99,6 +103,9 @@ public class Startup
             });
         });
 
+        services.AddTransient<GenerateLinks>();
+        services.AddTransient<HATEOASAuthorFilterAttribute>();
+        services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
