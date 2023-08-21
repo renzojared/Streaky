@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Udemy.DTOs;
@@ -8,6 +10,7 @@ namespace Streaky.Udemy.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
 public class AuthorController : ControllerBase
 {
     private readonly ApplicationDbContext context;
@@ -21,20 +24,8 @@ public class AuthorController : ControllerBase
         this.configuration = configuration;
     }
 
-    [HttpGet("configurationss")]
-    public ActionResult<string> GetConfiguration()
-    {
-        /*
-            1. appsettings (menor prioridad)
-            2. launchsettings
-            3. secrets (local)
-            r. from linecommand dotnet run -- "key=value" (mayor prioridad)
-        */
-        //return configuration["connectionStrings:defaultConnection"];
-        return configuration["lastname"];
-    }
-
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<AuthorDTO>>> Get()
     {
         var authors = await context.Author.ToListAsync();
