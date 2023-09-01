@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +13,7 @@ using Streaky.Udemy.Middlewares;
 using Streaky.Udemy.Services;
 using Streaky.Udemy.Utilities;
 
+[assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace Streaky.Udemy;
 
 public class Startup
@@ -29,6 +32,7 @@ public class Startup
         services.AddControllers(opt =>
         {
             opt.Filters.Add(typeof(ExceptionFiler));
+            opt.Conventions.Add(new SwaggerGroupByVersion());
         })
             .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles)
             .AddNewtonsoftJson();
@@ -49,8 +53,25 @@ public class Startup
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthorsAPI", Version = "v1" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "AuthorsAPI",
+                Version = "v1",
+                Description = "Web api to work with authors and book",
+                Contact = new OpenApiContact
+                {
+                    Email = "renzojared_lm@hotmail.com",
+                    Name = "Renzo Leon",
+                    Url = new Uri("https://github.com/renzojared")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "MIT"
+                }
+            });
+            c.SwaggerDoc("v2", new OpenApiInfo { Title = "AuthorsAPI", Version = "v2" });
             c.OperationFilter<AddParameterHATEOAS>();
+            c.OperationFilter<AddParameterXVersion>();
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
@@ -76,6 +97,10 @@ public class Startup
                     new string[]{}
                 }
             });
+
+            var fileXML = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var routeXML = Path.Combine(AppContext.BaseDirectory, fileXML);
+            c.IncludeXmlComments(routeXML);
         });
 
         services.AddAutoMapper(typeof(Startup));
@@ -98,7 +123,8 @@ public class Startup
         {
             op.AddDefaultPolicy(b =>
             {
-                b.WithOrigins("*").AllowAnyMethod().AllowAnyHeader(); //totest : https://www.apirequest.io
+                b.WithOrigins("*").AllowAnyMethod().AllowAnyHeader()
+                .WithExposedHeaders(new string[] { "quantityTotalRecords" }); //totest : https://www.apirequest.io
                 //.WithExposedHeaders();
             });
         });
@@ -116,7 +142,11 @@ public class Startup
         {
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json","Streaky.Udemy v1"));
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Streaky.Udemy v1");
+                c.SwaggerEndpoint("/swagger/v2/swagger.json", "Streaky.Udemy v2");
+            });
         }
 
         app.UseHttpsRedirection();

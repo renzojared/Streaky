@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Streaky.Udemy.DTOs;
 using Streaky.Udemy.Entities;
 
-namespace Streaky.Udemy.Controllers;
+namespace Streaky.Udemy.Controllers.V1;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class BookController : ControllerBase
 {
     public readonly ApplicationDbContext context;

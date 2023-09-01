@@ -7,10 +7,11 @@ using Streaky.Udemy.DTOs;
 using Streaky.Udemy.Entities;
 using Streaky.Udemy.Utilities;
 
-namespace Streaky.Udemy.Controllers;
+namespace Streaky.Udemy.Controllers.V1;
 
 [ApiController]
 [Route("api/[controller]")]
+[HeaderIsPresent("x-version", "1")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
 public class AuthorController : ControllerBase
 {
@@ -28,9 +29,12 @@ public class AuthorController : ControllerBase
     [HttpGet(Name = "getAuthors")]
     [AllowAnonymous]
     [ServiceFilter(typeof(HATEOASAuthorFilterAttribute))]
-    public async Task<ActionResult<List<AuthorDTO>>> Get()
+    public async Task<ActionResult<List<AuthorDTO>>> Get([FromQuery] PaginationDTO paginationDTO)
     {
-        var authors = await context.Author.ToListAsync();
+        var queryable = context.Author.AsQueryable();
+        await HttpContext.InsertParameteresPaginationInHeader(queryable);
+
+        var authors = await queryable.OrderBy(a => a.Name).ToPage(paginationDTO).ToListAsync();
         return mapper.Map<List<AuthorDTO>>(authors);
     }
 
@@ -97,6 +101,12 @@ public class AuthorController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Borra un author
+    /// </summary>
+    /// <param name="id">Id del autor a borrar</param>
+    /// <returns></returns>
 
     [HttpDelete("{id:int}", Name = "deleteAuthor")]
     public async Task<ActionResult> Delete(int id)

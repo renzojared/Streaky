@@ -5,6 +5,7 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>eb868313-dff5-43e0-bc62-205941ace1bc</UserSecretsId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,8 @@
     <None Remove="Filters\" />
     <None Remove="DTOs\" />
     <None Remove="Utilities\" />
+    <None Remove="Controllers\V1\" />
+    <None Remove="Controllers\V2\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -41,6 +44,8 @@
     <Folder Include="wwwroot\" />
     <Folder Include="DTOs\" />
     <Folder Include="Utilities\" />
+    <Folder Include="Controllers\V1\" />
+    <Folder Include="Controllers\V2\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\" />

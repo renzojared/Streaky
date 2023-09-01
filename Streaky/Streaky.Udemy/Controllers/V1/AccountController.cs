@@ -10,10 +10,10 @@ using Microsoft.IdentityModel.Tokens;
 using Streaky.Udemy.DTOs;
 using Streaky.Udemy.Services;
 
-namespace Streaky.Udemy.Controllers;
+namespace Streaky.Udemy.Controllers.V1;
 
 [ApiController]
-[Route("appi/[controller]")]
+[Route("appi/v1/[controller]")]
 public class AccountController : ControllerBase
 {
     private readonly UserManager<IdentityUser> userManager;

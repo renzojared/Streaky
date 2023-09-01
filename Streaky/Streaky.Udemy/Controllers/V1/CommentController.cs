@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Udemy.DTOs;
 using Streaky.Udemy.Entities;
+using Streaky.Udemy.Utilities;
 
-namespace Streaky.Udemy.Controllers;
+namespace Streaky.Udemy.Controllers.V1;
 
 [ApiController]
-[Route("api/book/{bookId:int}/[controller]")]
+[Route("api/v1/book/{bookId:int}/[controller]")]
 public class CommentController : ControllerBase
 {
     private readonly ApplicationDbContext context;
@@ -25,14 +26,18 @@ public class CommentController : ControllerBase
     }
 
     [HttpGet(Name = "getCommentsBook")]
-    public async Task<ActionResult<List<CommentDTO>>> Get(int bookId)
+    public async Task<ActionResult<List<CommentDTO>>> Get(int bookId, [FromQuery] PaginationDTO paginationDTO)
     {
-        var comments = await context.Comment.Where(_ => _.BookId == bookId).ToListAsync();
 
         var existBook = await context.Book.AnyAsync(_ => _.Id == bookId);
 
         if (!existBook)
             return NotFound();
+
+        var queryable = context.Comment.Where(_ => _.BookId == bookId).AsQueryable();
+        await HttpContext.InsertParameteresPaginationInHeader(queryable);
+
+        var comments = await queryable.OrderBy(c => c.Id).ToPage(paginationDTO).ToListAsync();
 
         return mapper.Map<List<CommentDTO>>(comments);
     }
