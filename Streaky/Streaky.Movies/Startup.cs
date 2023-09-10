@@ -13,6 +13,8 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddAutoMapper(typeof(Startup));//Proyecto donde se va encontrar las clases de mapeo.
+
         services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
         services.AddControllers();
