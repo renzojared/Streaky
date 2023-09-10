@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streaky.Udemy", "Streaky.Ud
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streaky.Udemy.Tests", "Streaky.Udemy.Tests\Streaky.Udemy.Tests.csproj", "{1682C2DE-3D6F-4F64-A088-0D27A5F4AB6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streaky.Movies", "Streaky.Movies\Streaky.Movies.csproj", "{99286297-EFAC-4AA4-8FF4-92AFDDBBA45C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{1682C2DE-3D6F-4F64-A088-0D27A5F4AB6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1682C2DE-3D6F-4F64-A088-0D27A5F4AB6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1682C2DE-3D6F-4F64-A088-0D27A5F4AB6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99286297-EFAC-4AA4-8FF4-92AFDDBBA45C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99286297-EFAC-4AA4-8FF4-92AFDDBBA45C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99286297-EFAC-4AA4-8FF4-92AFDDBBA45C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99286297-EFAC-4AA4-8FF4-92AFDDBBA45C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
