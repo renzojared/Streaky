@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Movies.DTOs;
@@ -86,6 +87,32 @@ public class ActorsController : ControllerBase
                 actorDb.Photo = await storageFiles.EditFile(content, extension, container, actorDb.Photo, actorCreationDTO.Photo.ContentType);
             }
         }
+
+        await context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPatch("{id:int}")]
+    public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorPatchDTO> patchDocument) //Para actualizaciones parciales
+    {
+        if (patchDocument is null)
+            return BadRequest();
+
+        var entityDb = await context.Actors.FirstOrDefaultAsync(s => s.Id == id);
+
+        if (entityDb is null)
+            return NotFound();
+
+        var entityDto = mapper.Map<ActorPatchDTO>(entityDb);
+        patchDocument.ApplyTo(entityDto, ModelState);
+
+        var isValid = TryValidateModel(entityDto);
+
+        if (!isValid)
+            return BadRequest(ModelState);
+
+        mapper.Map(entityDto, entityDb);
 
         await context.SaveChangesAsync();
 

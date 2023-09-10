@@ -14,6 +14,8 @@ public class AutoMapperProfiles : Profile
         CreateMap<Actor, ActorDTO>().ReverseMap();
         CreateMap<ActorCreationDTO, Actor>()
             .ForMember(s => s.Photo, opt => opt.Ignore());
+
+        CreateMap<ActorPatchDTO, Actor>().ReverseMap();
     }
 }
 

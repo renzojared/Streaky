@@ -21,7 +21,8 @@ public class Startup
 
         services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-        services.AddControllers();
+        services.AddControllers()
+            .AddNewtonsoftJson();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
