@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Movies.DTOs;
 using Streaky.Movies.Entities;
+using Streaky.Movies.Helper;
 using Streaky.Movies.Services;
 
 namespace Streaky.Movies.Controllers;
@@ -25,9 +26,12 @@ public class ActorsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ActorDTO>>> Get()
+    public async Task<ActionResult<List<ActorDTO>>> Get([FromQuery] PaginationDTO paginationDTO)
     {
-        var entities = await context.Actors.ToListAsync();
+        var queryable = context.Actors.AsQueryable();
+        await HttpContext.InsertParametersPagination(queryable, paginationDTO.QuantityRecordByPage);
+
+        var entities = await queryable.Paginate(paginationDTO).ToListAsync();
 
         return mapper.Map<List<ActorDTO>>(entities);
     }
