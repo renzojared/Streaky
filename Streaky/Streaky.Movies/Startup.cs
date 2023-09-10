@@ -1,16 +1,20 @@
-﻿namespace Streaky.Movies;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Streaky.Movies;
 
 public class Startup
 {
-    public IConfiguration configuration { get; }
+    public IConfiguration Configuration { get; }
 
     public Startup(IConfiguration configuration)
     {
-        this.configuration = configuration;
+        this.Configuration = configuration;
     }
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
