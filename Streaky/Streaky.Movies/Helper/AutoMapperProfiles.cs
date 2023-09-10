@@ -12,7 +12,8 @@ public class AutoMapperProfiles : Profile
         CreateMap<GenderCreationDTO, Gender>().ReverseMap();
 
         CreateMap<Actor, ActorDTO>().ReverseMap();
-        CreateMap<ActorCreationDTO, Actor>().ReverseMap();
+        CreateMap<ActorCreationDTO, Actor>()
+            .ForMember(s => s.Photo, opt => opt.Ignore());
     }
 }
 

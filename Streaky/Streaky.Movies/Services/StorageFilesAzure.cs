@@ -37,7 +37,7 @@ public class StorageFilesAzure : IStorageFiles
 
         client.SetAccessPolicy(PublicAccessType.Blob);
 
-        var fileName = $"{Guid.NewGuid()}.{extension}";
+        var fileName = $"{Guid.NewGuid()}{extension}";
         var blob = client.GetBlobClient(fileName);
 
         var blobUploadOptions = new BlobUploadOptions();

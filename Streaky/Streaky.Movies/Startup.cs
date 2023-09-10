@@ -16,7 +16,8 @@ public class Startup
     {
         services.AddAutoMapper(typeof(Startup));//Proyecto donde se va encontrar las clases de mapeo.
 
-        services.AddTransient<IStorageFiles, StorageFilesAzure>(); //For Azure
+        services.AddTransient<IStorageFiles, StorageFilesLocal>(); //For Local or Azure
+        services.AddHttpContextAccessor();
 
         services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -38,6 +39,7 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
+        app.UseStaticFiles();
         app.UseRouting();
         app.UseAuthorization();
         app.UseEndpoints(e =>

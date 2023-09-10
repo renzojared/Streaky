@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Movies.DTOs;
 using Streaky.Movies.Entities;
+using Streaky.Movies.Services;
 
 namespace Streaky.Movies.Controllers;
 
@@ -12,11 +13,14 @@ public class ActorsController : ControllerBase
 {
     private readonly ApplicationDbContext context;
     private readonly IMapper mapper;
+    private readonly IStorageFiles storageFiles;
+    private readonly string container = "actors";
 
-    public ActorsController(ApplicationDbContext context, IMapper mapper)
+    public ActorsController(ApplicationDbContext context, IMapper mapper, IStorageFiles storageFiles)
     {
         this.context = context;
         this.mapper = mapper;
+        this.storageFiles = storageFiles;
     }
 
     [HttpGet]
@@ -42,8 +46,20 @@ public class ActorsController : ControllerBase
     public async Task<ActionResult> Post([FromForm] ActorCreationDTO actorCreationDTO)
     {
         var entity = mapper.Map<Actor>(actorCreationDTO);
+
+        if (actorCreationDTO.Photo != null)
+        {
+            using (var s = new MemoryStream())
+            {
+                await actorCreationDTO.Photo.CopyToAsync(s);
+                var content = s.ToArray();
+                var extension = Path.GetExtension(actorCreationDTO.Photo.FileName);
+                entity.Photo = await storageFiles.SaveFile(content, extension, container, actorCreationDTO.Photo.ContentType);
+            }
+        }
+
         context.Add(entity);
-        //await context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         var dto = mapper.Map<ActorDTO>(entity);
 
@@ -53,10 +69,24 @@ public class ActorsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<ActionResult> Put(int id, [FromForm] ActorCreationDTO actorCreationDTO)
     {
-        var entity = mapper.Map<Actor>(actorCreationDTO);
-        entity.Id = id;
+        var actorDb = await context.Actors.FirstOrDefaultAsync(s => s.Id == id);
 
-        context.Entry(entity).State = EntityState.Modified;
+        if (actorDb is null)
+            return NotFound();
+
+        actorDb = mapper.Map(actorCreationDTO, actorDb); //Para actualizar solo los campos cambiados
+
+        if (actorCreationDTO.Photo != null)
+        {
+            using (var s = new MemoryStream())
+            {
+                await actorCreationDTO.Photo.CopyToAsync(s);
+                var content = s.ToArray();
+                var extension = Path.GetExtension(actorCreationDTO.Photo.FileName);
+                actorDb.Photo = await storageFiles.EditFile(content, extension, container, actorDb.Photo, actorCreationDTO.Photo.ContentType);
+            }
+        }
+
         await context.SaveChangesAsync();
 
         return NoContent();
