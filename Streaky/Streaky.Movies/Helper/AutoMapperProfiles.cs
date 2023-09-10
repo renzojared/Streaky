@@ -18,14 +18,50 @@ public class AutoMapperProfiles : Profile
         CreateMap<ActorPatchDTO, Actor>().ReverseMap();
 
         CreateMap<Movie, MovieDTO>().ReverseMap();
+
         CreateMap<MovieCreationDTO, Movie>()
             .ForMember(s => s.Poster, opt => opt.Ignore())
             .ForMember(s => s.MoviesGenders, opt => opt.MapFrom(MapMoviesGenders))
             .ForMember(s => s.MoviesActors, opt => opt.MapFrom(MapMoviesActors));
 
+        CreateMap<Movie, MovieDetailDTO>()
+            .ForMember(s => s.Genders, opt => opt.MapFrom(MapMoviesGender))
+            .ForMember(s => s.Actors, opt => opt.MapFrom(MapMoviesActors));
+
         CreateMap<MoviePatchDTO, Movie>().ReverseMap();
+    }
 
+    private List<ActorMovieDetailDTO> MapMoviesActors(Movie movie, MovieDetailDTO movieDetailDTO)
+    {
+        var result = new List<ActorMovieDetailDTO>();
 
+        if (movie.MoviesActors is null)
+            return result;
+
+        foreach (var actorMovie in movie.MoviesActors)
+        {
+            result.Add(new ActorMovieDetailDTO
+            {
+                ActorId = actorMovie.ActorId,
+                Character = actorMovie.Character,
+                PersonName = actorMovie.Actor.Name
+            });
+        }
+        return result;
+    }
+
+    private List<GenderDTO> MapMoviesGender(Movie movie, MovieDetailDTO movieDetailDTO)
+    {
+        var result = new List<GenderDTO>();
+        if (movieDetailDTO is null)
+            return result;
+
+        foreach (var genderMovie in movie.MoviesGenders)
+        {
+            result.Add(new GenderDTO() { Id = genderMovie.GenderId, Name = genderMovie.Gender.Name });
+        }
+
+        return result;
     }
 
     private List<MoviesGenders> MapMoviesGenders(MovieCreationDTO movieCreationDTO, Movie movie)
