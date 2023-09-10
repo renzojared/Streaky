@@ -10,5 +10,6 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Gender> Genders { get; set; }
+    public DbSet<Actor> Actors { get; set; }
 }
 
