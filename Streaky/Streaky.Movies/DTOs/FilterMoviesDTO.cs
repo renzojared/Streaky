@@ -13,5 +13,7 @@ public class FilterMoviesDTO
     public int GenderId { get; set; }
     public bool InCinema { get; set; }
     public bool NextReleases { get; set; }
+    public string FieldOrder { get; set; }
+    public bool OrderAscending { get; set; } = true;
 }
 

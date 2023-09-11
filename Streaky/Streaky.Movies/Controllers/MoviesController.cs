@@ -6,6 +6,7 @@ using Streaky.Movies.DTOs;
 using Streaky.Movies.Entities;
 using Streaky.Movies.Helper;
 using Streaky.Movies.Services;
+using System.Linq.Dynamic.Core;
 
 namespace Streaky.Movies.Controllers;
 
@@ -17,12 +18,14 @@ public class MoviesController : ControllerBase
     private readonly IMapper mapper;
     private readonly IStorageFiles storageFiles;
     private readonly string container = "movies";
+    private readonly ILogger<MoviesController> logger;
 
-    public MoviesController(ApplicationDbContext context, IMapper mapper, IStorageFiles storageFiles)
+    public MoviesController(ApplicationDbContext context, IMapper mapper, IStorageFiles storageFiles, ILogger<MoviesController> logger)
     {
         this.context = context;
         this.mapper = mapper;
         this.storageFiles = storageFiles;
+        this.logger = logger;
     }
 
     [HttpGet]
@@ -70,6 +73,20 @@ public class MoviesController : ControllerBase
             movieQueryable = movieQueryable
                 .Where(s => s.MoviesGenders.Select(y => y.GenderId)
                 .Contains(filterMoviesDTO.GenderId));
+
+        if (!string.IsNullOrEmpty(filterMoviesDTO.FieldOrder))
+        {
+            var typeOrder = filterMoviesDTO.OrderAscending ? "ascending" : "descending";
+            try
+            {
+                movieQueryable = movieQueryable.OrderBy($"{filterMoviesDTO.FieldOrder} {typeOrder}");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message, ex);
+            }
+            
+        }
 
         await HttpContext.InsertParametersPagination(movieQueryable, filterMoviesDTO.QuantityRecordsByPage);
 
