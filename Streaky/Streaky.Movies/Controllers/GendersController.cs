@@ -8,74 +8,40 @@ namespace Streaky.Movies.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GendersController : ControllerBase
+public class GendersController : CustomBaseController
 {
-    private readonly ApplicationDbContext context;
-    private readonly IMapper mapper;
-
-    public GendersController(ApplicationDbContext context, IMapper mapper)
+    public GendersController(ApplicationDbContext context, IMapper mapper) : base(context, mapper)
     {
-        this.context = context;
-        this.mapper = mapper;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<GenderDTO>>> Get()
     {
-        var entities = await context.Genders.ToListAsync();
-        var dtos = mapper.Map<List<GenderDTO>>(entities);
-        return dtos;
+        return await Get<Gender, GenderDTO>();
     }
 
     [HttpGet("{id:int}", Name = "getGender")]
     public async Task<ActionResult<GenderDTO>> Get(int id)
     {
-        var entity = await context.Genders.FirstOrDefaultAsync(s => s.Id == id);
-
-        if (entity is null)
-            return NotFound();
-
-        var dto = mapper.Map<GenderDTO>(entity);
-        return dto;
+        return await Get<Gender, GenderDTO>(id);
     }
 
     [HttpPost]
     public async Task<ActionResult> Post([FromBody] GenderCreationDTO genderCreationDTO)
     {
-        var entity = mapper.Map<Gender>(genderCreationDTO);
-        context.Add(entity);
-
-        await context.SaveChangesAsync();
-
-        var genderDto = mapper.Map<GenderDTO>(entity);
-
-        return new CreatedAtRouteResult("getGender", new { id = genderDto.Id }, genderDto);
+        return await Post<GenderCreationDTO, Gender, GenderDTO>(genderCreationDTO, "getGender");
     }
 
     [HttpPut("{id:int}")]
     public async Task<ActionResult> Put(int id, [FromBody] GenderCreationDTO genderCreationDTO)
     {
-        var entity = mapper.Map<Gender>(genderCreationDTO);
-        entity.Id = id;
-        context.Entry(entity).State = EntityState.Modified;
-
-        await context.SaveChangesAsync();
-
-        return NoContent();
+        return await Put<GenderCreationDTO, Gender>(id, genderCreationDTO);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var exists = await context.Genders.AnyAsync(s => s.Id == id);
-
-        if (!exists)
-            return NotFound();
-
-        context.Remove(new Gender() { Id = id });
-        await context.SaveChangesAsync();
-
-        return NoContent();
+        return await Delete<Gender>(id);
     }
 }
 

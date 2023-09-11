@@ -12,7 +12,7 @@ namespace Streaky.Movies.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MoviesController : ControllerBase
+public class MoviesController : CustomBaseController
 {
     private readonly ApplicationDbContext context;
     private readonly IMapper mapper;
@@ -20,7 +20,7 @@ public class MoviesController : ControllerBase
     private readonly string container = "movies";
     private readonly ILogger<MoviesController> logger;
 
-    public MoviesController(ApplicationDbContext context, IMapper mapper, IStorageFiles storageFiles, ILogger<MoviesController> logger)
+    public MoviesController(ApplicationDbContext context, IMapper mapper, IStorageFiles storageFiles, ILogger<MoviesController> logger) : base(context, mapper)
     {
         this.context = context;
         this.mapper = mapper;
@@ -183,41 +183,13 @@ public class MoviesController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<MoviePatchDTO> patchDocument) //Para actualizaciones parciales
     {
-        if (patchDocument is null)
-            return BadRequest();
-
-        var entityDb = await context.Movies.FirstOrDefaultAsync(s => s.Id == id);
-
-        if (entityDb is null)
-            return NotFound();
-
-        var entityDto = mapper.Map<MoviePatchDTO>(entityDb);
-        patchDocument.ApplyTo(entityDto, ModelState);
-
-        var isValid = TryValidateModel(entityDto);
-
-        if (!isValid)
-            return BadRequest(ModelState);
-
-        mapper.Map(entityDto, entityDb);
-
-        await context.SaveChangesAsync();
-
-        return NoContent();
+        return await Patch<Movie, MoviePatchDTO>(id, patchDocument);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var exists = await context.Movies.AnyAsync(s => s.Id == id);
-
-        if (!exists)
-            return NotFound();
-
-        context.Remove(new Movie() { Id = id });
-        await context.SaveChangesAsync();
-
-        return NoContent();
+        return await Delete<Movie>(id);
     }
 }
 

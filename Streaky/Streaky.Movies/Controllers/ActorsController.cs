@@ -4,21 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Streaky.Movies.DTOs;
 using Streaky.Movies.Entities;
-using Streaky.Movies.Helper;
 using Streaky.Movies.Services;
 
 namespace Streaky.Movies.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ActorsController : ControllerBase
+public class ActorsController : CustomBaseController
 {
     private readonly ApplicationDbContext context;
     private readonly IMapper mapper;
     private readonly IStorageFiles storageFiles;
     private readonly string container = "actors";
 
-    public ActorsController(ApplicationDbContext context, IMapper mapper, IStorageFiles storageFiles)
+    public ActorsController(ApplicationDbContext context, IMapper mapper, IStorageFiles storageFiles) : base(context, mapper)
     {
         this.context = context;
         this.mapper = mapper;
@@ -28,23 +27,13 @@ public class ActorsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ActorDTO>>> Get([FromQuery] PaginationDTO paginationDTO)
     {
-        var queryable = context.Actors.AsQueryable();
-        await HttpContext.InsertParametersPagination(queryable, paginationDTO.QuantityRecordByPage);
-
-        var entities = await queryable.Paginate(paginationDTO).ToListAsync();
-
-        return mapper.Map<List<ActorDTO>>(entities);
+        return await Get<Actor, ActorDTO>(paginationDTO);
     }
 
     [HttpGet("{id:int}", Name = "getActor")]
     public async Task<ActionResult<ActorDTO>> Get(int id)
     {
-        var entity = await context.Actors.FirstOrDefaultAsync(s => s.Id == id);
-
-        if (entity is null)
-            return NotFound();
-
-        return mapper.Map<ActorDTO>(entity);
+        return await Get<Actor, ActorDTO>(id);
     }
 
     [HttpPost]
@@ -100,41 +89,13 @@ public class ActorsController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorPatchDTO> patchDocument) //Para actualizaciones parciales
     {
-        if (patchDocument is null)
-            return BadRequest();
-
-        var entityDb = await context.Actors.FirstOrDefaultAsync(s => s.Id == id);
-
-        if (entityDb is null)
-            return NotFound();
-
-        var entityDto = mapper.Map<ActorPatchDTO>(entityDb);
-        patchDocument.ApplyTo(entityDto, ModelState);
-
-        var isValid = TryValidateModel(entityDto);
-
-        if (!isValid)
-            return BadRequest(ModelState);
-
-        mapper.Map(entityDto, entityDb);
-
-        await context.SaveChangesAsync();
-
-        return NoContent();
+        return await Patch<Actor, ActorPatchDTO>(id, patchDocument);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var exists = await context.Actors.AnyAsync(s => s.Id == id);
-
-        if (!exists)
-            return NotFound();
-
-        context.Remove(new Actor() { Id = id });
-        await context.SaveChangesAsync();
-
-        return NoContent();
+        return await Delete<Actor>(id);
     }
 }
 
