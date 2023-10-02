@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 
 #nullable disable
 
@@ -11,16 +12,17 @@ namespace Streaky.Movies.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "movieTheaters",
+                name: "MovieTheaters",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    Location = table.Column<Point>(type: "geography", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_movieTheaters", x => x.Id);
+                    table.PrimaryKey("PK_MovieTheaters", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -34,15 +36,15 @@ namespace Streaky.Movies.Migrations
                 {
                     table.PrimaryKey("PK_MoviesMovieTheaters", x => new { x.MovieId, x.MovieTheaterId });
                     table.ForeignKey(
-                        name: "FK_MoviesMovieTheaters_Movies_MovieId",
-                        column: x => x.MovieId,
-                        principalTable: "Movies",
+                        name: "FK_MoviesMovieTheaters_MovieTheaters_MovieTheaterId",
+                        column: x => x.MovieTheaterId,
+                        principalTable: "MovieTheaters",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MoviesMovieTheaters_movieTheaters_MovieTheaterId",
-                        column: x => x.MovieTheaterId,
-                        principalTable: "movieTheaters",
+                        name: "FK_MoviesMovieTheaters_Movies_MovieId",
+                        column: x => x.MovieId,
+                        principalTable: "Movies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -60,7 +62,7 @@ namespace Streaky.Movies.Migrations
                 name: "MoviesMovieTheaters");
 
             migrationBuilder.DropTable(
-                name: "movieTheaters");
+                name: "MovieTheaters");
         }
     }
 }

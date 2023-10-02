@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Streaky.Movies;
@@ -12,9 +13,11 @@ using Streaky.Movies;
 namespace Streaky.Movies.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231002011536_dataMovieTheaters")]
+    partial class dataMovieTheaters
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,26 +194,6 @@ namespace Streaky.Movies.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MovieTheaters");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 2,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-11.994766 -11.994766)"),
-                            Name = "Mall de Comas"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-77.06287 -11.994766)"),
-                            Name = "Mega Plaza"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-105.619548 32.675991)"),
-                            Name = "Espania Mall"
-                        });
                 });
 
             modelBuilder.Entity("Streaky.Movies.Entities.MoviesActors", b =>

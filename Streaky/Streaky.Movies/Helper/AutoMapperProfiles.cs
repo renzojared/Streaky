@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 using Streaky.Movies.DTOs;
 using Streaky.Movies.Entities;
 
@@ -6,13 +8,19 @@ namespace Streaky.Movies.Helper;
 
 public class AutoMapperProfiles : Profile
 {
-    public AutoMapperProfiles()
+    public AutoMapperProfiles(GeometryFactory geometryFactory)
     {
         CreateMap<Gender, GenderDTO>().ReverseMap();
         CreateMap<GenderCreationDTO, Gender>().ReverseMap();
 
-        CreateMap<MovieTheater, MovieTheaterDTO>().ReverseMap();
-        CreateMap<MovieTheaterCreationDTO, MovieTheater>().ReverseMap();
+        CreateMap<MovieTheater, MovieTheaterDTO>()
+            .ForMember(s => s.Latitude, s => s.MapFrom(y => y.Location.Y))
+            .ForMember(s => s.Length, s => s.MapFrom(y => y.Location.X));
+
+        CreateMap<MovieTheaterDTO, MovieTheater>()
+            .ForMember(s => s.Location, s => s.MapFrom(y => geometryFactory.CreatePoint(new Coordinate(y.Length, y.Latitude))));
+        CreateMap<MovieTheaterCreationDTO, MovieTheater>()
+            .ForMember(s => s.Location, s => s.MapFrom(y => geometryFactory.CreatePoint(new Coordinate(y.Length, y.Latitude))));
 
         CreateMap<Actor, ActorDTO>().ReverseMap();
         CreateMap<ActorCreationDTO, Actor>()

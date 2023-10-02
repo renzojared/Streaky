@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Streaky.Movies;
 
 #nullable disable
@@ -12,7 +13,7 @@ using Streaky.Movies;
 namespace Streaky.Movies.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231002001328_addEntitiesMovieTheaters")]
+    [Migration("20231002005149_addEntitiesMovieTheaters")]
     partial class addEntitiesMovieTheaters
     {
         /// <inheritdoc />
@@ -181,6 +182,10 @@ namespace Streaky.Movies.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<Point>("Location")
+                        .IsRequired()
+                        .HasColumnType("geography");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -188,7 +193,7 @@ namespace Streaky.Movies.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("movieTheaters");
+                    b.ToTable("MovieTheaters");
                 });
 
             modelBuilder.Entity("Streaky.Movies.Entities.MoviesActors", b =>

@@ -1,9 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using NetTopologySuite;
 using Streaky.Movies.Entities;
 
 namespace Streaky.Movies;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext
 {
     public ApplicationDbContext(DbContextOptions opt) : base(opt)
     {
@@ -27,6 +31,54 @@ public class ApplicationDbContext : DbContext
 
     private void SeedData(ModelBuilder modelBuilder)
     {
+        var rolAdminId = "BBA43D23-7E34-4D2F-918A-85D282DB966C";
+        var userAdminId = "9596FBB8-805E-4B93-B8D7-EC141FA61061";
+
+        var rolAdmin = new IdentityRole()
+        {
+            Id = rolAdminId,
+            Name = "Admin",
+            NormalizedName = "Admin"
+        };
+        var passwordHasher = new PasswordHasher<IdentityUser>();
+        var username = "renzojared_lm@hotmail.com";
+
+        var userAdmin = new IdentityUser()
+        {
+            Id = userAdminId,
+            UserName = username,
+            NormalizedUserName = username,
+            Email = username,
+            NormalizedEmail = username,
+            PasswordHash = passwordHasher.HashPassword(null, "rleon@@")
+        };
+
+        modelBuilder.Entity<IdentityUser>()
+            .HasData(userAdmin);
+
+        modelBuilder.Entity<IdentityRole>()
+            .HasData(rolAdmin);
+
+        modelBuilder.Entity<IdentityUserClaim<string>>()
+            .HasData(new IdentityUserClaim<string>()
+            {
+                Id = 1,
+                ClaimType = ClaimTypes.Role,
+                UserId = userAdminId,
+                ClaimValue = "Admin"
+            });
+
+        var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+        modelBuilder.Entity<MovieTheater>()
+            .HasData(new List<MovieTheater>
+            {
+                new MovieTheater{Id = 2, Name = "Mall de Comas", Location = geometryFactory.CreatePoint(new NetTopologySuite.Geometries.Coordinate(-11.994766,-11.994766))},
+                new MovieTheater{Id = 3, Name = "Mega Plaza", Location = geometryFactory.CreatePoint(new NetTopologySuite.Geometries.Coordinate(-77.062870,-11.994766))},
+                new MovieTheater{Id = 4, Name = "Espania Mall", Location = geometryFactory.CreatePoint(new NetTopologySuite.Geometries.Coordinate(-105.619548,32.675991
+
+))}
+            });
+
         var adventure = new Gender() { Id = 4, Name = "Aventura" };
         var animation = new Gender() { Id = 5, Name = "Animación" };
         var suspense = new Gender() { Id = 6, Name = "Suspenso" };
@@ -122,7 +174,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Movie> Movies { get; set; }
     public DbSet<MoviesActors> MoviesActors { get; set; }
     public DbSet<MoviesGenders> MoviesGenders { get; set; }
-    public DbSet<MovieTheater> movieTheaters { get; set; }
+    public DbSet<MovieTheater> MovieTheaters { get; set; }
     public DbSet<MoviesMovieTheater> MoviesMovieTheaters { get; set; }
 }
 

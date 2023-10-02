@@ -1,4 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
+using Streaky.Movies.Helper;
 using Streaky.Movies.Services;
 
 namespace Streaky.Movies;
@@ -19,10 +27,37 @@ public class Startup
         services.AddTransient<IStorageFiles, StorageFilesLocal>(); //For Local or Azure
         services.AddHttpContextAccessor();
 
-        services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+        services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
+        services.AddSingleton(p =>
+        new MapperConfiguration(c =>
+        {
+            var geometryFactory = p.GetRequiredService<GeometryFactory>();
+            c.AddProfile(new AutoMapperProfiles(geometryFactory));
+        }).CreateMapper());
+
+        services.AddDbContext<ApplicationDbContext>(opt =>
+        opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+        s => s.UseNetTopologySuite()));
 
         services.AddControllers()
             .AddNewtonsoftJson();
+
+        services.AddIdentity<IdentityUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(opt =>
+            opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["jwt:key"])),
+                ClockSkew = TimeSpan.Zero
+            });
+
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
