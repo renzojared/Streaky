@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Streaky.Movies.Entities;
 
 namespace Streaky.Movies;
@@ -17,6 +16,9 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<MoviesGenders>()
             .HasKey(s => new { s.GenderId, s.MovieId });
+
+        modelBuilder.Entity<MoviesMovieTheater>()
+            .HasKey(s => new { s.MovieId, s.MovieTheaterId });
 
         SeedData(modelBuilder);
 
@@ -120,5 +122,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Movie> Movies { get; set; }
     public DbSet<MoviesActors> MoviesActors { get; set; }
     public DbSet<MoviesGenders> MoviesGenders { get; set; }
+    public DbSet<MovieTheater> movieTheaters { get; set; }
+    public DbSet<MoviesMovieTheater> MoviesMovieTheaters { get; set; }
 }
 
